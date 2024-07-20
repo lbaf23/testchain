@@ -1,0 +1,12 @@
+**/__pycache__
+**/tmp
+
+.idea
+.vscode
+
+result
+logs
+
+tmp*
+
+run*.sh

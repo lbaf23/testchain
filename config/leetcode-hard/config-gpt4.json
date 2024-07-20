@@ -1,0 +1,19 @@
+{
+    "dataset": {
+        "name": "leetcode-hard",
+        "dataset_file": "data/leetcode-hard-wo-examples.jsonl",
+        "start": 0,
+        "end": 39
+    },
+    "model": {
+        "name": "gpt",
+        "model_name": "gpt-4-0125-preview"
+    },
+    "evaluator": {
+        "name": "py_asserts",
+        "time_limit": 1.0
+    },
+    "result_dir": "result/leetcode-hard/gpt4",
+    "max_tokens": 512,
+    "log_dir": "logs/leetcode-hard/gpt4"
+}
