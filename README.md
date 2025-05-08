@@ -53,9 +53,6 @@ python main.py \
 --config 'config/leetcode-hard/config-gpt4o.json' \
 --mode 'TestChain' \
 --prompt_type 'py_inter' \
---api_key 'sk-y0MnhSWH7QZTgOB2uwjMTd3FnS1jSxeqlKEz2TdWeo8c6QGJ' \
---base_url 'https://api.chatanywhere.tech/v1'
-
 --api_key 'xxx' \
 --base_url 'xxx'
 ```
