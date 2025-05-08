@@ -6,7 +6,8 @@ import json
 class LocalDataset(CodeDataset):
     data_range: List[int] = []
 
-    def __init__(self, name: str, dataset_file: str, start: int = 0, end: int = -1, selected_data: List[int] = [], selected: bool = False):
+    def __init__(self, name: str, dataset_file: str, start: int = 0, end: int = -1, selected_data: List[int] = [],
+                 selected: bool = False):
         self.name = name
 
         self.dataset_file = dataset_file
@@ -38,14 +39,14 @@ class LocalDataset(CodeDataset):
                         self.data.append(json.loads(line))
                     index += 1
                     line = file.readline()
-            
+
             if self.select_all:
                 self.start = 0
                 self.end = index
             else:
                 self.start = start
                 self.end = end
-            
+
             self.data_range = [i for i in range(self.start, self.end)]
 
     def get_data(self, i: int) -> Dict:
@@ -56,7 +57,7 @@ class LocalDataset(CodeDataset):
             entry_point
             solution
             test_cases
-        """            
+        """
         if i < self.start or i >= self.end:
             raise IndexError
 
@@ -64,18 +65,21 @@ class LocalDataset(CodeDataset):
 
         if self.name == 'humaneval':
             return {
-                'index': i, 
+                'index': i,
                 'prompt': d['prompt_wo_examples'],
                 'entry_point': d['entry_point'],
                 'solution': d['prompt_wo_examples'] + d['canonical_solution'],
-                'canonical_test_cases': d['test_cases']
+                'tests': d['test_cases'],
+                'prompt_full': d['prompt']
             }
         elif self.name == 'leetcode-hard':
             return {
                 'index': i,
                 'prompt': d['prompt_wo_examples'],
                 'entry_point': d['entry_point'],
-                'solution': d['solution']
+                'solution': d['solution'],
+                'tests': d['tests'],
+                'prompt_full': d['prompt_full']
             }
         else:
             raise NotImplementedError

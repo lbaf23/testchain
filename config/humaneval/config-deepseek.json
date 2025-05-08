@@ -6,14 +6,13 @@
         "end": 164
     },
     "model": {
-        "name": "gpt",
-        "model_name": "gpt-4-0125-preview"
+        "name": "api",
+        "model_name": "deepseek-chat"
     },
     "evaluator": {
         "name": "py_asserts",
         "time_limit": 1.0
     },
-    "result_dir": "result/humaneval/gpt4",
-    "max_tokens": 512,
-    "log_dir": "logs/humaneval/gpt4"
+    "result_dir": "result/humaneval/deepseek",
+    "log_dir": "logs/humaneval/deepseek"
 }

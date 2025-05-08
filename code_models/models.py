@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional, Union
 
 
 class ModelBase():
@@ -12,5 +12,5 @@ class ModelBase():
     def generate_chat(self, messages: List[Dict], max_tokens: int = 1024, stop_strs: List[str] = [], temperature: float = 0.2) -> str:
         raise NotImplementedError
 
-    def generate(self, prompt: str, max_tokens: int = 1024, stop_strs: List[str] = [], temperature: float = 0.2) -> str:
+    def generate(self, prompt: str, max_tokens: int = 1024, stop_strs: Optional[List[str]] = None, temperature: float = 0.2) -> str:
         raise NotImplementedError

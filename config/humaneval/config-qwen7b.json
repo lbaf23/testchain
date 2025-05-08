@@ -6,14 +6,13 @@
         "end": 164
     },
     "model": {
-        "name": "gpt",
-        "model_name": "Phind/Phind-CodeLlama-34B-v2"
+        "name": "qwen",
+        "model_name": "../models/Qwen2.5-7B-Instruct"
     },
     "evaluator": {
         "name": "py_asserts",
         "time_limit": 1.0
     },
-    "result_dir": "result/humaneval/codellama-34b",
-    "max_tokens": 512,
-    "log_dir": "logs/humaneval/codellama-34b"
+    "result_dir": "result/humaneval/qwen7b",
+    "log_dir": "logs/humaneval/qwen7b"
 }

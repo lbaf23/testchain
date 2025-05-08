@@ -21,14 +21,14 @@ def runner(codes: List, q: Queue):
         except Exception:
             q.put([False, 'runtime_error'])
             return
-    
+
     q.put([True, ''])
 
 
 def run_with_time_limit(codes: List, time_limit: float) -> Tuple[bool, str]:
     timeout_error = [False, 'timeout_error']
     q = Queue()
-    p = Process(target=runner, args=(codes, q, ))
+    p = Process(target=runner, args=(codes, q,))
     p.start()
     p.join(time_limit)
     if p.is_alive():

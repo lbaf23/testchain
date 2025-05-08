@@ -2,6 +2,7 @@ from .code_evaluator import CodeEvaluator
 from typing import List, Tuple, Dict
 from .evaluator_utils import run_with_time_limit
 from utils import StdUtils
+import os
 
 
 class PyTestCasesEvaluator(CodeEvaluator):
@@ -9,9 +10,16 @@ class PyTestCasesEvaluator(CodeEvaluator):
         """
         time_limit: time limit per test cases
         """
+        os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         self.time_limit = time_limit
 
     def evaluate(self, code: str, test_cases: List[str]) -> Tuple[Dict, List[Dict]]:
+        import sys
+        sys.setrecursionlimit(10 ** 8)
+
+        if type(test_cases) == dict:
+            test_cases = [test_cases]
+
         test_cases_results = []
         passed = 0
         total = len(test_cases)
@@ -33,10 +41,10 @@ class PyTestCasesEvaluator(CodeEvaluator):
 
         std_utils.recover()
 
-        return {
+        out = [{
             'score': 0 if total == 0 else float(passed) / total,
             'passed': passed,
             'total': total
-        }, test_cases_results
+        }, test_cases_results]
 
-
+        return out

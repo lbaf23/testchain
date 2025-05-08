@@ -1,12 +1,15 @@
 # TestChain
 
-The image below shows the architecture of Testchain.
+LLM-powered multi-agent framework with code-assisted
+reasoning for text-to-testcase generation
 
-<img src="figures/testchain.svg" alt="testchain">
+- The image below shows the architecture of Testchain.
 
-The image below shows an example of how a large model generates correct test cases by interacting with external tools.
+<img src="figures/testchain.png" alt="testchain">
 
-<img src="figures/conversation.svg" alt="conversation" style="zoom:80%">
+- The image below shows an example of the code-assisted reasoning.
+
+<img src="figures/reasoning.png" alt="conversation" style="zoom:80%">
 
 
 ## Dataset
@@ -36,25 +39,28 @@ pip install -r requirements.txt
 
 | args          | description |
 | -             | - |
-| --config      | Path of the config file                               |
-| --mode        | Run mode, one of `TestGenerator`, `TestAgent`, `TestChain`   |
-| --prompt_type | Prompt type, support `codet` for `TestGenerator`, `0-shot` and `1-shot` for `TestAgent`, `py_inter` for `TestChain`
+| --config      | Path of the config file                           |
+| --mode        | Run mode, one of `TestAgent`, `TestChain`   |
+| --prompt_type | Prompt type, support `0-shot` (CodeT-TG) and `1-shot` (Reflexion-TG), `py_inter` (TestChain)
 | --api_key     | OpenAI or DeepInfra API key |
 | --base_url    | `https://api.openai.com/v1` for OpenAI and `https://api.deepinfra.com/v1/openai` for DeepInfra |
 
 
-For example, run `TestGenerator` method with `codet` prompt type: 
+For example:
 
 ```bash
 python main.py \
---config='config/humaneval/config-codellama-34b.json' \
---mode=TestGenerator \
---prompt_type=codet \
---api_key=<deepinfra api key> \
---base_url='https://api.deepinfra.com/v1/openai'
+--config 'config/leetcode-hard/config-gpt4o.json' \
+--mode 'TestChain' \
+--prompt_type 'py_inter' \
+--api_key 'sk-y0MnhSWH7QZTgOB2uwjMTd3FnS1jSxeqlKEz2TdWeo8c6QGJ' \
+--base_url 'https://api.chatanywhere.tech/v1'
+
+--api_key 'xxx' \
+--base_url 'xxx'
 ```
 
-And the directory for the run results will be `result/humaneval/codellama-34b/TestGenerator_codet`.
+And the directory for the run results will be `result/leetcode-hard/gpt4o/TestChain_py_inter`.
 
 
 
@@ -71,12 +77,14 @@ And the directory for the run results will be `result/humaneval/codellama-34b/Te
 | --base_dir | Result directory |
 | --max_nums | Maximum number of assert statements retained for each problem, set to $10$ in our experiments |
 
-- For example, count result of `TestGenerator` method with `codet` prompt type: 
+- For example:
 
 ```bash
 python count.py \
---base_dir=result/humaneval/codellama-34b/TestGenerator_codet \
---max_nums=10
+--base_dir 'result/leetcode-hard/gpt4o/TestChain_py_inter' \
+--start 0 \
+--end 39 \
+--max_nums 10
 ```
 
 
@@ -96,14 +104,14 @@ python count.py \
 | --max_nums        | Maximum number of assert statements retained for each problem, set to $10$ in our experiments |
 | --time_limit      | Maximum seconds for a single question. Due to coverage being implemented using Python `sys.settrace`, a more lenient time limit is needed. Set to $10$ in our experiments. |
 
-- For example, count coverage of `TestGenerator` method with `codet` prompt type: 
+- For example:
 
 ```bash
 python count_coverage.py \
---dataset_path=data/humaneval-wo-examples.jsonl \
---base_dir=result/humaneval/codellama-34b/TestGenerator_codet \
---max_nums=10 \
---time_limit=10
+--dataset_path 'data/leetcode-hard-wo-examples.jsonl' \
+--base_dir 'result/leetcode-hard/TestChain_py_inter' \
+--start 0 \
+--end 39 \
+--max_nums 10 \
+--time_limit 10
 ```
-
-

@@ -2,21 +2,23 @@ from utils import extract_test_cases, extract_first_block
 from typing import List, Tuple
 from code_models import ModelBase
 import logging
+from utils import execute_get_output, make_assert
 from .python_inter import PyInterpreter
 
 
 class CalculatorAgent:
-    function_signature = '[FUNCTION SIGNATURE]:'
-    test_input = '[TEST INPUT]:'
-    thought = '[THOUGHT]:'
-    code = '[CODE]:'
-    observation = '[OBSERVATION]:'
-    test_case = '[TEST CASE]:'
-
+    function_signature = '[Function Signature and Docstring]:'
+    test_input = '[Test Input]:'
+    thought = '[Thought]:'
+    code = '[Code]:'
+    observation = '[Observation]:'
+    test_case = '[Test Case]:'
 
     system_prompt = f'''\
-You are a Python tester. Your task is to calculate the test output and write the test case statement corresponding to the test input for the function given the definition and docstring. Write each test case with a single line of assert statement. 
-You have access to a Python interpreter, which allows you to execute any Python code snippet that assist in calculating the test output. Do not write the implementation of the target function directly.
+You are an expert Python programmer.
+You will be given a function signature and docstring, along with a test input to the function.
+Your task is to predict the test output corresponding to this test input and write a complete test case, which is represented by an assert statement.
+You need to break the problem down into a series of steps, and for complex steps, you need to write Python program snippets to help with reasoning and calculations.
 
 Use the following format:
 {function_signature}
@@ -37,8 +39,8 @@ A single line of assert statement, put it in a Python code block.
 
 Begin!
 '''
-    
-    final_prompt = 'I now know the final answer.'
+
+    final_prompt = 'Please write the test case now.'
     go_on_prompt = 'Good job! Please go on.'
 
     few_shot_prompt = f'''\
@@ -55,6 +57,7 @@ def find_the_median(arr: List[int]) -> float:
     If the length of the array is even, then the median is the average of the two middle numbers.
     """
 ```
+
 {test_input}
 ```text
 input: [1, 3, 2, 5]
@@ -111,24 +114,26 @@ END OF EXAMPLES.
 
     def __init__(
             self,
-            model: ModelBase
+            model: ModelBase,
+            py_inter: PyInterpreter = None,
     ) -> None:
         self.model = model
+        self.py_inter = py_inter
 
     def format_output(self, output: str) -> Tuple[str, str, str]:
         if output.__contains__(self.thought):
-            output = output[output.index(self.thought) + len(self.thought) : ].strip()
+            output = output[output.index(self.thought) + len(self.thought):].strip()
 
         code = ''
         thought = output
         test_case = ''
         if output.__contains__(self.code):
-            thought = thought[ : thought.index(self.code)].strip()
-            code = output[output.index(self.code) + len(self.code) : ].strip()
+            thought = thought[: thought.index(self.code)].strip()
+            code = output[output.index(self.code) + len(self.code):].strip()
             return 'code', thought, code
         elif output.__contains__(self.test_case):
-            thought = thought[ : thought.index(self.test_case)].strip()
-            test_case = output[output.index(self.test_case) + len(self.test_case) : ].strip()
+            thought = thought[: thought.index(self.test_case)].strip()
+            test_case = output[output.index(self.test_case) + len(self.test_case):].strip()
             return 'test_case', thought, test_case
         else:
             return 'error', thought, ''
@@ -158,7 +163,7 @@ END OF EXAMPLES.
             temperature: float = 0.2,
             max_iterations: int = 5
     ) -> str:
-        logging.info('=' * 50 + 'input' + '=' * 50)
+        logging.info('=' * 20 + 'input' + '=' * 20)
         logging.info(input)
 
         if prompt_type == 'py_inter':
@@ -168,6 +173,12 @@ END OF EXAMPLES.
                 max_tokens=max_tokens,
                 temperature=temperature,
                 max_iterations=max_iterations
+            )
+        elif prompt_type == 'directly':
+            test_case = self.generate_directly(
+                function_def=function_def,
+                input=input,
+                temperature=temperature
             )
         else:
             raise NotImplementedError
@@ -182,8 +193,19 @@ END OF EXAMPLES.
             temperature: float = 0.2,
             max_iterations: int = 5
     ) -> str:
-        py_interpreter = PyInterpreter()
-        stop_strs = [f'\n{self.observation}']
+        """
+        Generate with interactive py interpreter
+        Args:
+            function_def (str): function signature and docstring
+            input (str):
+            max_tokens (int): default to 512
+            temperature (float):
+            max_iterations (int): default to 10
+        Returns:
+            (str): assert ...
+        """
+
+        stop_strs = [f'\n{self.observation}', f'{self.observation}\n', self.observation]
 
         system_prompt = self.system_prompt
         user_prompt = f'''\
@@ -199,13 +221,10 @@ input: {input}
 ```
 '''
         messages = [
-            {
-                'role': 'system',
-                'content': system_prompt
-            }
+            {'role': 'system', 'content': system_prompt}
         ]
 
-        logging.info('-' * 50 + 'calculator agent [system]' + '-' * 50)
+        logging.info('-' * 20 + 'calculator agent [system]' + '-' * 20)
         logging.info(system_prompt)
 
         i = 0
@@ -215,13 +234,9 @@ input: {input}
                 'role': 'user',
                 'content': user_prompt
             })
-            
-            logging.info('=' * 50 + 'calculator agent' + '=' * 50)
-            logging.info('------' + 'assistant' + '------')
-            logging.info(messages[-2]['content'])
-            logging.info('------' + 'user' + '------')
+
+            logging.info('-' * 20 + 'calculator agent [user]' + '-' * 20)
             logging.info(messages[-1]['content'])
-            logging.info('=' * 100)
 
             output = self.model.generate_chat(
                 messages=messages,
@@ -230,7 +245,7 @@ input: {input}
                 temperature=temperature
             )
 
-            logging.info('-' * 50 + 'calculator agent [output]' + '-' * 50)
+            logging.info('-' * 20 + 'calculator agent [assistant]' + '-' * 20)
             logging.info(output)
             logging.info('-' * 100)
 
@@ -251,7 +266,7 @@ input: {input}
                 })
                 obs = ''
                 if code != '':
-                    obs = py_interpreter.run_cell(code)
+                    obs = self.py_inter.run_cell(code)
                     user_prompt = f'''\
 {self.observation}
 {obs}
@@ -306,26 +321,186 @@ input: {input}
                 temperature=temperature
             )
 
-            logging.info('=' * 50 + 'calculator agent' + '=' * 50)
-            logging.info('------' + 'assistant' + '------')
-            logging.info(messages[-2]['content'])
-            logging.info('------' + 'user' + '------')
+            logging.info('-' * 20 + ' calculator agent [user]' + '-' * 20)
             logging.info(messages[-1]['content'])
-            logging.info('=' * 100)
 
-
-            logging.info('-' * 50 + 'calculator agent [assistant]' + '-' * 50)
+            logging.info('-' * 20 + 'calculator agent [assistant]' + '-' * 20)
             logging.info(output)
-            logging.info('-' * 100)
 
             test_cases = output
 
-        py_interpreter.create()
+        self.py_inter.clear()
 
-        test_cases = extract_test_cases(test_cases)
+        test_cases = test_cases.strip()
+        ret = extract_test_cases(test_cases)
+        if len(ret) == 0:
+            ret = test_cases.strip().split('\n')
 
-        if len(test_cases) > 0:
-            return test_cases[0]
-        else:
-            return ''
+        logging.info('-' * 20 + 'calculator agent [test case]' + '-' * 20)
+        logging.info(ret[0])
 
+        return ret[0]
+
+    def generate_directly_from_code(
+            self,
+            entry_point: str,
+            input: str,
+            code: str,
+    ) -> str:
+        """
+        Calculate output directly with a generated code or directly predict
+        """
+        test_input = input
+
+        if test_input.startswith('(') and test_input.endswith(')'):
+            test_input = test_input[1:-1]
+
+        test_output = execute_get_output(test_input, entry_point, code)
+        return make_assert(test_input, test_output, entry_point)
+
+    thought_and_test_case = '[Thought and Test Case]:'
+
+    def generate_directly_reasoning(
+            self,
+            function_def: str,
+            entry_point: str,
+            input: str,
+    ) -> str:
+        system_prompt = 'You are a Python test programmer.'
+        user_prompt = f'''\
+You are provided with a function signature and docstring, along with a test input.
+Your task is to predict the test output and write the test case statement corresponding to the test input.
+You should first use 2-3 sentences to describe your thought, then you should write the test case with a single line of assert statement in a Python code block.
+
+For example:
+
+{self.function_signature}
+```python
+from typing import List
+
+def find_the_median(arr: List[int]) -> float:
+    """
+    Given an unsorted array of integers `arr`, find the median of the array.
+    The median is the middle value in an ordered list of numbers.
+    If the length of the array is even, then the median is the average of the two middle numbers.
+    """
+```
+
+{self.test_input}
+```text
+input: [1, 3, 2, 5]
+```
+
+{self.thought_and_test_case}
+The middle number of the input array is 2 and 3, so the medium should be the average of the two numbers 2.5.
+```python
+assert find_the_median([1, 3, 2, 5]) == 2.5
+```
+
+End of examples.
+
+
+{self.function_signature}
+```python
+{function_def}
+```
+
+{self.test_input}
+```text
+input: {input}
+```
+
+{self.thought_and_test_case}
+'''
+        output = self.model.generate_chat(
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ],
+            stop_strs=[self.function_signature, self.test_input],
+            max_tokens=512,
+            temperature=0.2
+        )
+
+        logging.info('-' * 20 + 'calculator agent generate_directly_reasoning [system]' + '-' * 20)
+        logging.info(system_prompt)
+        logging.info('-' * 20 + 'calculator agent generate_directly_reasoning [user]' + '-' * 20)
+        logging.info(user_prompt)
+        logging.info('-' * 20 + 'calculator agent generate_directly_reasoning [assistant]' + '-' * 20)
+        logging.info(output)
+
+        test_output = extract_first_block(output, 'python')
+        test_case = test_output.split('\n')[0]
+        return test_case
+
+    def generate_directly(
+            self,
+            function_def: str,
+            entry_point: str,
+            input: str,
+    ) -> str:
+        system_prompt = 'You are a Python test programmer.'
+        user_prompt = f'''\
+You are provided with a function signature and docstring, along with a test input.
+Your task is to predict the test output and write the test case statement corresponding to the test input.
+You should write the test case with a single line of assert statement in a Python code block, without any other content.
+
+For example:
+
+{self.function_signature}
+```python
+from typing import List
+
+def find_the_median(arr: List[int]) -> float:
+    """
+    Given an unsorted array of integers `arr`, find the median of the array.
+    The median is the middle value in an ordered list of numbers.
+    If the length of the array is even, then the median is the average of the two middle numbers.
+    """
+```
+
+{self.test_input}
+```text
+input: [1, 3, 2, 5]
+```
+
+{self.test_case}
+```python
+assert find_the_median([1, 3, 2, 5]) == 2.5
+```
+
+End of examples.
+
+
+{self.function_signature}
+```python
+{function_def}
+```
+
+{self.test_input}
+```text
+input: {input}
+```
+
+{self.test_case}
+'''
+        output = self.model.generate_chat(
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ],
+            stop_strs=[self.function_signature, self.test_input],
+            max_tokens=256,
+            temperature=0.2
+        )
+
+        logging.info('-' * 20 + 'calculator agent generate_directly [system]' + '-' * 20)
+        logging.info(system_prompt)
+        logging.info('-' * 20 + 'calculator agent generate_directly [user]' + '-' * 20)
+        logging.info(user_prompt)
+        logging.info('-' * 20 + 'calculator agent generate_directly [assistant]' + '-' * 20)
+        logging.info(output)
+
+        test_output = extract_first_block(output, 'python')
+        test_case = test_output.split('\n')[0]
+        return test_case

@@ -1,0 +1,18 @@
+{
+    "dataset": {
+        "name": "leetcode-hard",
+        "dataset_file": "data/leetcode-hard-wo-examples.jsonl",
+        "start": 0,
+        "end": 39
+    },
+    "model": {
+        "name": "api",
+        "model_name": "deepseek-chat"
+    },
+    "evaluator": {
+        "name": "py_asserts",
+        "time_limit": 1.0
+    },
+    "result_dir": "result/leetcode-hard/deepseek",
+    "log_dir": "logs/leetcode-hard/deepseek"
+}

@@ -26,7 +26,7 @@ def write_file(file_path: str, content: str | Dict):
     if isinstance(content, dict):
         content = json.dumps(content)
     with open(file_path, 'w') as file:
-        file.write(content + '\n')
+        file.write(content)
 
 
 def create_dirs(file_dir: str):
@@ -72,7 +72,7 @@ def read_file(file_path: str) -> str:
 def read_last_line(file_path: str) -> str:
     if not os.path.exists(file_path):
         return ''
-    
+
     with open(file_path, 'r') as file:
         content = ''
         line = file.readline()
@@ -85,7 +85,7 @@ def read_last_line(file_path: str) -> str:
 def read_first_line(file_path: str) -> str:
     if not os.path.exists(file_path):
         return ''
-    
+
     with open(file_path, 'r') as file:
         line = file.readline()
     return line

@@ -18,6 +18,9 @@ def read_jsonlines(file_path: str) -> List[Dict]:
 
 
 def save_jsonlines(file_path: str, lines: List[Dict]):
+    if type(lines) == dict:
+        lines = [lines]
+
     with open(file_path, 'w') as file:
         for line in lines:
             line = json.dumps(line)
@@ -25,6 +28,9 @@ def save_jsonlines(file_path: str, lines: List[Dict]):
 
 
 def append_jsonlines(file_path: str, lines: List[Dict]):
+    if type(lines) == dict:
+        lines = [lines]
+
     with open(file_path, 'a') as file:
         for line in lines:
             line = json.dumps(line)

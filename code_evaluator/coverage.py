@@ -6,7 +6,7 @@ def remove_docstring(code: str):
     lines = code.split('\n')
     out = lines[0] + '\n'
     for i in range(1, len(lines)):
-        if lines[i-1].startswith('def') and lines[i].strip().startswith('"'):
+        if lines[i - 1].startswith('def') and lines[i].strip().startswith('"'):
             pass
         else:
             out += lines[i] + '\n'
@@ -40,20 +40,25 @@ def trace_exec_code(
     sys.settrace(trace_function)
 
     succeed = False
+    # signal.signal(signal.SIGALRM, handler=handle_timeout)
+    # signal.setitimer(signal.ITIMER_REAL, time_limit)
     try:
         for code_exec in code_execs:
             exec(code_exec, var)
         succeed = True
     except Exception:
         pass
+    # finally:
+    #     signal.alarm(0)
+    #     sys.settrace(None)
     return succeed, var, trace_lines
 
 
 def coverage(
-    prefix: str,
-    code: str,
-    test_cases: List[str],
-    time_limit: float = 5.0
+        prefix: str,
+        code: str,
+        test_cases: List[str],
+        time_limit: float = 5.0
 ) -> Tuple[float, List[int], List[int]]:
     prefix_lines = prefix.strip().split('\n')
     prefix_lines = [l for l in prefix_lines if l.strip() != '']
@@ -74,7 +79,7 @@ def coverage(
             time_limit=time_limit
         )
         trace_lines.update(tr)
-    
+
     miss_lines = []
 
     passed = 0

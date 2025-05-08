@@ -6,12 +6,12 @@ from .models import ModelBase
 
 @retry(wait=wait_random_exponential(min=1, max=5), stop=stop_after_attempt(5))
 def gpt_chat(
-    client: OpenAI,
-    model: str,
-    messages: List[Dict],
-    max_tokens: int = 1024,
-    stop_strs: List[str] = [],
-    temperature: float = 0.2,
+        client: OpenAI,
+        model: str,
+        messages: List[Dict],
+        max_tokens: int = 1024,
+        stop_strs: List[str] = [],
+        temperature: float = 0.2,
 ) -> str:
     response = client.chat.completions.create(
         model=model,
@@ -29,10 +29,12 @@ class GPTChat(ModelBase):
         self.model_name = model_name
         self.client = OpenAI(**args)
 
-    def generate_chat(self, messages: List[Dict], max_tokens: int = 1024, stop_strs: List[str] = [], temperature: float = 0.2) -> str:
+    def generate_chat(self, messages: List[Dict], max_tokens: int = 1024, stop_strs: List[str] = [],
+                      temperature: float = 0.2) -> str:
         return gpt_chat(self.client, self.model_name, messages, max_tokens, stop_strs, temperature)
-    
-    def generate(self, prompt: str, max_tokens: int = 1024, stop_strs: List[str] = [], temperature: float = 0.2) -> str:
+
+    def generate(self, prompt: str, max_tokens: int = 1024, stop_strs: List[str] | None = None,
+                 temperature: float = 0.2) -> str:
         completion = self.client.completions.create(
             model=self.model_name,
             prompt=prompt,
@@ -42,5 +44,3 @@ class GPTChat(ModelBase):
             top_p=0.95
         )
         return completion.choices[0].text
-
-

@@ -1,0 +1,18 @@
+{
+    "dataset": {
+        "name": "humaneval",
+        "dataset_file": "data/humaneval-wo-examples.jsonl",
+        "start": 0,
+        "end": 164
+    },
+    "model": {
+        "name": "api",
+        "model_name": "gpt-4o-ca"
+    },
+    "evaluator": {
+        "name": "py_asserts",
+        "time_limit": 1.0
+    },
+    "result_dir": "result/humaneval/gpt4o",
+    "log_dir": "logs/humaneval/gpt4o"
+}

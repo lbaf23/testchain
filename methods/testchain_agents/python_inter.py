@@ -1,18 +1,22 @@
-from IPython.core.interactiveshell import InteractiveShell
+# from IPython.core.interactiveshell import InteractiveShell
+from IPython.terminal.interactiveshell import TerminalInteractiveShell
 from multiprocessing import Queue
 import io
 import sys
 import signal
+import shutil
+import time
 
 
 def handler(signum, frame):
     raise TimeoutError
 
+
 class StdUtils:
     def __init__(self):
         self.stdout = sys.stdout
         self.stderr = sys.stderr
-    
+
     def redirect(self):
         self.out_stream = io.StringIO()
         self.err_stream = io.StringIO()
@@ -29,6 +33,7 @@ class StdUtils:
 
 class PyInterpreter:
     def __init__(self):
+        self.ipython_dir = f'tmp-ipython-{time.time()}'
         self.create()
 
     def _run(self, code: str, q: Queue):
@@ -53,10 +58,10 @@ class PyInterpreter:
             signal.alarm(0)
 
         if len(output) > 1024:
-            output = output[ : 1024] + ' ......'
-        
+            output = output[: 1024] + ' ......'
+
         return output
-    
+
     def run_cell_directly(self, code: str):
         std = StdUtils()
         std.redirect()
@@ -70,5 +75,14 @@ import math
 '''
 
     def create(self):
-        self.shell = InteractiveShell(colors='NoColor')
-        self.run_cell(self.presets)
+        self.shell = TerminalInteractiveShell(ipython_dir=self.ipython_dir, colors='NoColor')
+        self.shell.run_cell(self.presets)
+
+    def clear(self):
+        self.shell.run_cell(r'%reset -f')
+        self.shell.run_cell(self.presets)
+
+    def exit(self):
+        self.shell.run_cell('exit()')
+        self.shell.history_manager.end_session()
+        shutil.rmtree(self.ipython_dir)

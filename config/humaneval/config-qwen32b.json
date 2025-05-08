@@ -6,14 +6,13 @@
         "end": 164
     },
     "model": {
-        "name": "gpt",
-        "model_name": "gpt-3.5-turbo-0125"
+        "name": "qwen",
+        "model_name": "../models/Qwen2.5-32B-Instruct"
     },
     "evaluator": {
         "name": "py_asserts",
         "time_limit": 1.0
     },
-    "result_dir": "result/humaneval/gpt35",
-    "max_tokens": 512,
-    "log_dir": "logs/humaneval/gpt35"
+    "result_dir": "result/humaneval/qwen32b",
+    "log_dir": "logs/humaneval/qwen32b"
 }

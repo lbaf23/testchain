@@ -6,14 +6,13 @@
         "end": 39
     },
     "model": {
-        "name": "gpt",
-        "model_name": "gpt-4-0125-preview"
+        "name": "qwen",
+        "model_name": "../models/Qwen2.5-14B-Instruct"
     },
     "evaluator": {
         "name": "py_asserts",
         "time_limit": 1.0
     },
-    "result_dir": "result/leetcode-hard/gpt4",
-    "max_tokens": 512,
-    "log_dir": "logs/leetcode-hard/gpt4"
+    "result_dir": "result/leetcode-hard/qwen14b",
+    "log_dir": "logs/leetcode-hard/qwen14b"
 }

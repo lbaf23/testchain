@@ -8,7 +8,7 @@ def model_factory(
         model_name: str,
         **args,
     ) -> ModelBase:
-    if name == 'gpt':
+    if name == 'gpt' or name == 'api':
         model = GPTChat(model_name=model_name, **args)
     elif name == 'codegen':
         model = CodeGen(model_name=model_name)

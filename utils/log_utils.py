@@ -6,7 +6,7 @@ def config_log(
         level: str = 'info',
         with_prefix: bool = False,
         clear: bool = False
-):
+    ):
     level = logging.DEBUG if level.lower() == 'debug' else logging.INFO
 
     if clear:
@@ -33,5 +33,5 @@ def config_log(
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 
-    logger.addHandler(file_handler)    
-    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+    # logger.addHandler(console_handler)

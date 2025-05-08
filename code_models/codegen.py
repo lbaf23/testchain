@@ -2,7 +2,7 @@ from typing import List
 from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteriaList
 import torch
 from .models import ModelBase
-from .utils import rstrip_code, CodeStoppingCriteria
+from .utils import rstrip_str, CodeStoppingCriteria
 
 
 class CodeGen(ModelBase):
@@ -37,4 +37,4 @@ class CodeGen(ModelBase):
             )
             code = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        return rstrip_code(code, stop_strs)
+        return rstrip_str(code, stop_strs)

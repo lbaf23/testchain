@@ -1,0 +1,18 @@
+{
+    "dataset": {
+        "name": "humaneval",
+        "dataset_file": "data/humaneval-wo-examples.jsonl",
+        "start": 0,
+        "end": 164
+    },
+    "model": {
+        "name": "qwen",
+        "model_name": "../models/Qwen2.5-14B-Instruct"
+    },
+    "evaluator": {
+        "name": "py_asserts",
+        "time_limit": 1.0
+    },
+    "result_dir": "result/humaneval/qwen14b",
+    "log_dir": "logs/humaneval/qwen14b"
+}
