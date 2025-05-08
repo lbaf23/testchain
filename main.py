@@ -123,7 +123,7 @@ def main():
     config = load_config(args.config)
     print(config, flush=True)
 
-    if config['model']['name'] == 'gpt35' or config['model']['name'] == 'gpt4':
+    if config['model']['name'] == 'api':
         pass
     else:
         init_cuda()
